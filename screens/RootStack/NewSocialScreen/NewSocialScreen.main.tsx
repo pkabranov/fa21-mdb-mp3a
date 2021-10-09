@@ -34,6 +34,17 @@ export default function NewSocialScreen({ navigation }: Props) {
       4. There is one attribute for the loading indicator in the submit button.
   
   */
+  const [eventName, setEventName] = useState("");
+  const [eventDate, setEventDate] = useState(
+    new Date("July 20, 69 20:17:40 GMT+00:00")
+  );
+  const [eventLocation, setEventLocation] = useState("");
+  const [eventDescription, setEventDescription] = useState("");
+  const [eventImage, setEventImage] = useState("");
+
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [isSnackbarVisible, setSnackbarVisibility] = useState(false);
+
 
   // TODO: Follow the Expo Docs to implement the ImagePicker component.
   // https://docs.expo.io/versions/latest/sdk/imagepicker/
@@ -52,28 +63,39 @@ export default function NewSocialScreen({ navigation }: Props) {
     // Otherwise, proceed onwards with uploading the image, and then the object.
 
     try {
-
       // NOTE: THE BULK OF THIS FUNCTION IS ALREADY IMPLEMENTED FOR YOU IN HINTS.TSX.
       // READ THIS TO GET A HIGH-LEVEL OVERVIEW OF WHAT YOU NEED TO DO, THEN GO READ THAT FILE!
-
       // (0) Firebase Cloud Storage wants a Blob, so we first convert the file path
       // saved in our eventImage state variable to a Blob.
-
       // (1) Write the image to Firebase Cloud Storage. Make sure to do this
       // using an "await" keyword, since we're in an async function. Name it using
       // the uuid provided below.
-
       // (2) Get the download URL of the file we just wrote. We're going to put that
       // download URL into Firestore (where our data itself is stored). Make sure to
       // do this using an async keyword.
-
       // (3) Construct & write the social model to the "socials" collection in Firestore.
       // The eventImage should be the downloadURL that we got from (3).
       // Make sure to do this using an async keyword.
-      
       // (4) If nothing threw an error, then go back to the previous screen.
       //     Otherwise, show an error.
-
+      const asyncAwaitNetworkRequests = async () => {
+        const object = await getFileObjectAsync(eventImage);
+        const result = await firebase
+          .storage()
+          .ref()
+          .child(uuid() + ".jpg")
+          .put(object as Blob);
+        const downloadURL = await result.ref.getDownloadURL();
+        const doc: SocialModel = {
+          eventName: eventName,
+          eventDate: eventDate.getTime(),
+          eventLocation: eventLocation,
+          eventDescription: eventDescription,
+          eventImage: downloadURL,
+        };
+        await firebase.firestore().collection("socials").doc().set(doc);
+        console.log("Finished social creation.");
+      };
     } catch (e) {
       console.log("Error while writing social:", e);
     }
@@ -93,11 +115,35 @@ export default function NewSocialScreen({ navigation }: Props) {
       <Bar />
       <View style={{ ...styles.container, padding: 20 }}>
         {/* TextInput */}
+        <TextInput
+          label={"Event Name"}
+          mode={"outlined"}
+          style={{ padding: 5 }}
+        ></TextInput>
         {/* TextInput */}
+        <TextInput
+          label={"Event Location"}
+          mode={"outlined"}
+          style={{ padding: 5 }}
+        ></TextInput>
         {/* TextInput */}
+        <TextInput
+          label={"Event Description"}
+          mode={"outlined"}
+          style={{ padding: 5 }}
+        ></TextInput>
         {/* Button */}
+        <Button mode="outlined" style={{ padding: 5 }}>
+          Choose a Date
+        </Button>
         {/* Button */}
+        <Button mode="outlined" style={{ padding: 5 }}>
+          Change Image
+        </Button>
         {/* Button */}
+        <Button onPress={saveEvent} mode="contained" style={{ padding: 5 }}>
+          Save Event
+        </Button>
         {/* DateTimePickerModal */}
         {/* Snackbar */}
       </View>

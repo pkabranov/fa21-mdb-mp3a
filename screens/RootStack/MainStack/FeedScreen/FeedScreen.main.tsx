@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { View, FlatList } from "react-native";
-import { Appbar, Card } from "react-native-paper";
+import { Appbar, Button, Card, Paragraph } from "react-native-paper";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import { SocialModel } from "../../../../models/social.js";
 import { styles } from "./FeedScreen.styles";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { MainStackParamList } from "../MainStackScreen.js";
+import NewSocialScreen from "../../NewSocialScreen/NewSocialScreen.main.js";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /* HOW TYPESCRIPT WORKS WITH PROPS:
 
@@ -32,6 +34,8 @@ export default function FeedScreen({ navigation }: Props) {
     variable using something like this:
         const [myList, setMyList] = useState<MyModelType[]>([]); */
 
+  const [feedItems, setFeedItems] = useState<SocialModel[]>([]);
+
   /*
     TODO: In a useEffect hook, start a Firebase observer to listen to the "socials" node in Firestore.
     Read More: https://firebase.google.com/docs/firestore/query-data/listen
@@ -51,20 +55,47 @@ export default function FeedScreen({ navigation }: Props) {
     // TODO: Return a Card corresponding to the social object passed in
     // to this function. On tapping this card, navigate to DetailScreen
     // and pass this social.
-
-    return null;
+    return (
+      <Card>
+        <Card.Title title={item.eventName} subtitle="Card Subtitle" />
+        <Card.Cover source={{ uri: item.eventImage }} />
+        <Card.Content>
+          <Paragraph>
+            {" "}
+            {item.eventLocation} • {item.eventDate}{" "}
+          </Paragraph>
+        </Card.Content>
+        <Card.Actions>
+          <Button>
+            
+          </Button>
+        </Card.Actions>
+      </Card>
+    );
   };
 
   const NavigationBar = () => {
     // TODO: Return an AppBar, with a title & a Plus Action Item that goes to the NewSocialScreen.
-    return null;
+    return (
+      <SafeAreaView>
+        <Appbar>
+          <Appbar.Content title="Socials"></Appbar.Content>
+          <Appbar.Action
+            icon="plus"
+            onPress={() => navigation.navigate("NewSocialScreen")}
+          />
+        </Appbar>
+      </SafeAreaView>
+    );
   };
 
   return (
     <>
+      <NavigationBar />
       {/* Embed your NavigationBar here. */}
       <View style={styles.container}>
         {/* Return a FlatList here. You'll need to use your renderItem method. */}
+        <FlatList data={feedItems} renderItem={renderItem} />
       </View>
     </>
   );
