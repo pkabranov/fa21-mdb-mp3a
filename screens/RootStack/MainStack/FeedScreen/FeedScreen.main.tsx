@@ -77,15 +77,13 @@ export default function FeedScreen({ navigation }: Props) {
   const NavigationBar = () => {
     // TODO: Return an AppBar, with a title & a Plus Action Item that goes to the NewSocialScreen.
     return (
-      <SafeAreaView>
-        <Appbar>
+        <Appbar.Header>
           <Appbar.Content title="Socials"></Appbar.Content>
           <Appbar.Action
             icon="plus"
             onPress={() => navigation.navigate("NewSocialScreen")}
           />
-        </Appbar>
-      </SafeAreaView>
+        </Appbar.Header>
     );
   };
 

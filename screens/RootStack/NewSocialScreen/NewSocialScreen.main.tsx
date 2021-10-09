@@ -43,11 +43,38 @@ export default function NewSocialScreen({ navigation }: Props) {
   const [eventImage, setEventImage] = useState("");
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [isDateSelected, setDateSelected] = useState(false);
   const [isSnackbarVisible, setSnackbarVisibility] = useState(false);
-
 
   // TODO: Follow the Expo Docs to implement the ImagePicker component.
   // https://docs.expo.io/versions/latest/sdk/imagepicker/
+
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS !== "web") {
+        const { status } =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+          alert("Sorry, we need camera roll permissions to make this work!");
+        }
+      }
+    })();
+  }, []);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.cancelled) {
+      setEventImage(result.uri);
+    }
+  };
 
   // TODO: Follow the GitHub Docs to implement the react-native-modal-datetime-picker component.
   // https://github.com/mmazzarolo/react-native-modal-datetime-picker
@@ -110,41 +137,75 @@ export default function NewSocialScreen({ navigation }: Props) {
     );
   };
 
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+    setDateSelected(true);
+  };
+
   return (
     <>
       <Bar />
-      <View style={{ ...styles.container, padding: 20 }}>
+      <View style={{ ...styles.container, padding: 15 }}>
         {/* TextInput */}
         <TextInput
           label={"Event Name"}
-          mode={"outlined"}
-          style={{ padding: 5 }}
-        ></TextInput>
+          mode={"flat"}
+          style={{ marginTop: 5, marginBottom: 5 }}
+        />
+
         {/* TextInput */}
         <TextInput
           label={"Event Location"}
-          mode={"outlined"}
-          style={{ padding: 5 }}
-        ></TextInput>
+          mode={"flat"}
+          style={{ marginTop: 5, marginBottom: 5 }}
+        />
+
         {/* TextInput */}
         <TextInput
           label={"Event Description"}
-          mode={"outlined"}
-          style={{ padding: 5 }}
-        ></TextInput>
+          mode={"flat"}
+          style={{ marginTop: 5, marginBottom: 5 }}
+        />
+
         {/* Button */}
-        <Button mode="outlined" style={{ padding: 5 }}>
-          Choose a Date
+        <Button
+          onPress={showDatePicker}
+          mode="outlined"
+          style={{ marginTop: 5, marginBottom: 5 }}
+        >
+          Select Date
         </Button>
+
         {/* Button */}
-        <Button mode="outlined" style={{ padding: 5 }}>
-          Change Image
+        <Button
+          onPress={pickImage}
+          mode="outlined"
+          style={{ marginTop: 5, marginBottom: 5 }}
+        >
+          Select Image
         </Button>
+
         {/* Button */}
-        <Button onPress={saveEvent} mode="contained" style={{ padding: 5 }}>
+        <Button
+          onPress={saveEvent}
+          mode="contained"
+          style={{ marginTop: 5, marginBottom: 5 }}
+        >
           Save Event
         </Button>
+
         {/* DateTimePickerModal */}
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          onConfirm={hideDatePicker}
+          onCancel={hideDatePicker}
+        />
+
         {/* Snackbar */}
       </View>
     </>
