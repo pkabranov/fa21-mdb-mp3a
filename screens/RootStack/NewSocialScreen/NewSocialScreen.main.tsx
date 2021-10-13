@@ -35,16 +35,17 @@ export default function NewSocialScreen({ navigation }: Props) {
   
   */
   const [eventName, setEventName] = useState("");
-  const [eventDate, setEventDate] = useState(
-    new Date("July 20, 69 20:17:40 GMT+00:00")
-  );
+  const [eventDate, setEventDate] = useState(new Date());
   const [eventLocation, setEventLocation] = useState("");
   const [eventDescription, setEventDescription] = useState("");
   const [eventImage, setEventImage] = useState("");
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isDateSelected, setDateSelected] = useState(false);
+
   const [isSnackbarVisible, setSnackbarVisibility] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   // TODO: Follow the Expo Docs to implement the ImagePicker component.
   // https://docs.expo.io/versions/latest/sdk/imagepicker/
@@ -69,8 +70,6 @@ export default function NewSocialScreen({ navigation }: Props) {
       quality: 1,
     });
 
-    console.log(result);
-
     if (!result.cancelled) {
       setEventImage(result.uri);
     }
@@ -79,32 +78,29 @@ export default function NewSocialScreen({ navigation }: Props) {
   // TODO: Follow the GitHub Docs to implement the react-native-modal-datetime-picker component.
   // https://github.com/mmazzarolo/react-native-modal-datetime-picker
 
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+    setDateSelected(true);
+  };
+
   // TODO: Follow the SnackBar Docs to implement the Snackbar component.
   // https://callstack.github.io/react-native-paper/snackbar.html
+
+  const onToggleSnackBar = () => setSnackbarVisibility(!isSnackbarVisible);
+  const onDismissSnackBar = () => setSnackbarVisibility(false);
 
   const saveEvent = async () => {
     // TODO: Validate all fields (hint: field values should be stored in state variables).
     // If there's a field that is missing data, then return and show an error
     // using the Snackbar.
-
+    console.log("saving event");
     // Otherwise, proceed onwards with uploading the image, and then the object.
 
     try {
-      // NOTE: THE BULK OF THIS FUNCTION IS ALREADY IMPLEMENTED FOR YOU IN HINTS.TSX.
-      // READ THIS TO GET A HIGH-LEVEL OVERVIEW OF WHAT YOU NEED TO DO, THEN GO READ THAT FILE!
-      // (0) Firebase Cloud Storage wants a Blob, so we first convert the file path
-      // saved in our eventImage state variable to a Blob.
-      // (1) Write the image to Firebase Cloud Storage. Make sure to do this
-      // using an "await" keyword, since we're in an async function. Name it using
-      // the uuid provided below.
-      // (2) Get the download URL of the file we just wrote. We're going to put that
-      // download URL into Firestore (where our data itself is stored). Make sure to
-      // do this using an async keyword.
-      // (3) Construct & write the social model to the "socials" collection in Firestore.
-      // The eventImage should be the downloadURL that we got from (3).
-      // Make sure to do this using an async keyword.
-      // (4) If nothing threw an error, then go back to the previous screen.
-      //     Otherwise, show an error.
       const asyncAwaitNetworkRequests = async () => {
         const object = await getFileObjectAsync(eventImage);
         const result = await firebase
@@ -123,6 +119,14 @@ export default function NewSocialScreen({ navigation }: Props) {
         await firebase.firestore().collection("socials").doc().set(doc);
         console.log("Finished social creation.");
       };
+      asyncAwaitNetworkRequests()
+        .then(() => {
+          console.log("our async function finished running.");
+          navigation.navigate("Main");
+        })
+        .catch((e) => {
+          console.log("our async function threw an error:", e);
+        });
     } catch (e) {
       console.log("Error while writing social:", e);
     }
@@ -137,15 +141,6 @@ export default function NewSocialScreen({ navigation }: Props) {
     );
   };
 
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
-  };
-
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
-    setDateSelected(true);
-  };
-
   return (
     <>
       <Bar />
@@ -154,6 +149,7 @@ export default function NewSocialScreen({ navigation }: Props) {
         <TextInput
           label={"Event Name"}
           mode={"flat"}
+          onChangeText={(text) => setEventName(text)}
           style={{ marginTop: 5, marginBottom: 5 }}
         />
 
@@ -161,6 +157,7 @@ export default function NewSocialScreen({ navigation }: Props) {
         <TextInput
           label={"Event Location"}
           mode={"flat"}
+          onChangeText={(text) => setEventLocation(text)}
           style={{ marginTop: 5, marginBottom: 5 }}
         />
 
@@ -168,6 +165,7 @@ export default function NewSocialScreen({ navigation }: Props) {
         <TextInput
           label={"Event Description"}
           mode={"flat"}
+          onChangeText={(text) => setEventDescription(text)}
           style={{ marginTop: 5, marginBottom: 5 }}
         />
 
@@ -193,6 +191,7 @@ export default function NewSocialScreen({ navigation }: Props) {
         <Button
           onPress={saveEvent}
           mode="contained"
+          loading={isLoading}
           style={{ marginTop: 5, marginBottom: 5 }}
         >
           Save Event
@@ -207,6 +206,12 @@ export default function NewSocialScreen({ navigation }: Props) {
         />
 
         {/* Snackbar */}
+        <Snackbar
+          visible={isSnackbarVisible}
+          onDismiss={() => setSnackbarVisibility(true)}
+        >
+          All fields are required!
+        </Snackbar>
       </View>
     </>
   );

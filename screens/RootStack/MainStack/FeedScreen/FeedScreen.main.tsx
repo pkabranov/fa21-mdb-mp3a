@@ -9,6 +9,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { MainStackParamList } from "../MainStackScreen.js";
 import NewSocialScreen from "../../NewSocialScreen/NewSocialScreen.main.js";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 /* HOW TYPESCRIPT WORKS WITH PROPS:
 
