@@ -52,25 +52,45 @@ export default function FeedScreen({ navigation }: Props) {
           load socials on this screen.
   */
 
+  useEffect(() => {
+    let unsubscribe = firebase
+      .firestore()
+      .collection("socials")
+      .onSnapshot((querySnapshot) => {
+        console.log("Received Data");
+        let events: SocialModel[] = [];
+        let count = 0;
+        querySnapshot.forEach((doc) => {
+          events.push({ ...doc.data(), id: count });
+          count += 1;
+        });
+        events.sort(function (a, b) {
+          return new Date(b.eventDate).valueOf() - new Date(a.eventDate).valueOf();
+        });
+        setFeedItems(events);
+      });
+    return unsubscribe;
+  }, []);
+
   const renderItem = ({ item }: { item: SocialModel }) => {
     // TODO: Return a Card corresponding to the social object passed in
     // to this function. On tapping this card, navigate to DetailScreen
     // and pass this social.
     return (
-      <Card>
-        <Card.Title title={item.eventName} subtitle="Card Subtitle" />
+      <Card
+        onPress={() => {
+          navigation.navigate("DetailScreen", { social: item });
+        }}
+      >
+        <Card.Title
+          title={item.eventName}
+          subtitle={
+            item.eventLocation +
+            " • " +
+            new Date(item.eventDate).toLocaleString()
+          }
+        />
         <Card.Cover source={{ uri: item.eventImage }} />
-        <Card.Content>
-          <Paragraph>
-            {" "}
-            {item.eventLocation} • {item.eventDate}{" "}
-          </Paragraph>
-        </Card.Content>
-        <Card.Actions>
-          <Button>
-            
-          </Button>
-        </Card.Actions>
       </Card>
     );
   };
@@ -78,13 +98,13 @@ export default function FeedScreen({ navigation }: Props) {
   const NavigationBar = () => {
     // TODO: Return an AppBar, with a title & a Plus Action Item that goes to the NewSocialScreen.
     return (
-        <Appbar.Header>
-          <Appbar.Content title="Socials"></Appbar.Content>
-          <Appbar.Action
-            icon="plus"
-            onPress={() => navigation.navigate("NewSocialScreen")}
-          />
-        </Appbar.Header>
+      <Appbar.Header>
+        <Appbar.Content title="Socials"></Appbar.Content>
+        <Appbar.Action
+          icon="plus"
+          onPress={() => navigation.navigate("NewSocialScreen")}
+        />
+      </Appbar.Header>
     );
   };
 

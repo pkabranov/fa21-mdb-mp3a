@@ -99,36 +99,48 @@ export default function NewSocialScreen({ navigation }: Props) {
     // using the Snackbar.
     console.log("saving event");
     // Otherwise, proceed onwards with uploading the image, and then the object.
-
-    try {
-      const asyncAwaitNetworkRequests = async () => {
-        const object = await getFileObjectAsync(eventImage);
-        const result = await firebase
-          .storage()
-          .ref()
-          .child(uuid() + ".jpg")
-          .put(object as Blob);
-        const downloadURL = await result.ref.getDownloadURL();
-        const doc: SocialModel = {
-          eventName: eventName,
-          eventDate: eventDate.getTime(),
-          eventLocation: eventLocation,
-          eventDescription: eventDescription,
-          eventImage: downloadURL,
+    if (
+      eventName &&
+      eventLocation &&
+      eventDescription &&
+      eventDate &&
+      eventImage
+    ) {
+      try {
+        setIsLoading(true);
+        const asyncAwaitNetworkRequests = async () => {
+          const object = await getFileObjectAsync(eventImage);
+          const result = await firebase
+            .storage()
+            .ref()
+            .child(uuid() + ".jpg")
+            .put(object as Blob);
+          const downloadURL = await result.ref.getDownloadURL();
+          const doc: SocialModel = {
+            eventName: eventName,
+            eventDate: eventDate.getTime(),
+            eventLocation: eventLocation,
+            eventDescription: eventDescription,
+            eventImage: downloadURL,
+          };
+          await firebase.firestore().collection("socials").doc().set(doc);
+          console.log("Finished social creation.");
         };
-        await firebase.firestore().collection("socials").doc().set(doc);
-        console.log("Finished social creation.");
-      };
-      asyncAwaitNetworkRequests()
-        .then(() => {
-          console.log("our async function finished running.");
-          navigation.navigate("Main");
-        })
-        .catch((e) => {
-          console.log("our async function threw an error:", e);
-        });
-    } catch (e) {
-      console.log("Error while writing social:", e);
+        asyncAwaitNetworkRequests()
+          .then(() => {
+            console.log("our async function finished running.");
+            setIsLoading(false);
+            navigation.navigate("Main");
+          })
+          .catch((e) => {
+            console.log("our async function threw an error:", e);
+          });
+      } catch (e) {
+        console.log("Error while writing social:", e);
+      }
+    } else {
+      console.log("Validation failed");
+      setSnackbarVisibility(true);
     }
   };
 
